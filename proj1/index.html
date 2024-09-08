@@ -1,0 +1,165 @@
+<html>
+	<head>
+		<title>CS 280A Proj1 - Leo Huang</title>
+		<link rel="stylesheet" href="styles.css">
+	</head>
+	<body>
+		<section class="" id="title">
+			<h1>CS 280A Project 1</h1>
+			<h1>Images of the Russian Empire: Colorizing the Prokudin-Gorskii Photo Collection</h1>
+			<h2>Leo Huang</h2>
+			<img src="img/final/emir.jpg" alt="">
+		</section>
+
+		<section class="" id="overview">
+			<h3>Overview</h3>
+			<p>
+				<a href="http://en.wikipedia.org/wiki/Prokudin-Gorskii">Sergei Mikhailovich Prokudin-Gorskii</a> (1863-1944) was a pioneer in photography, traveling across the Russian Empire to capture color images by documenting scenes in three separate color channels and later combining them to produce full-color effects. While many manual approaches have been used to colorize his images, this project aims to implement efficient algorithms to automate the alignment process for his photo collection.
+			</p>
+		</section>
+
+		<section class="" id="approach">
+			<h3>Approach</h3>
+			<h4>Alignment Metric: L2 vs. NCC</h4>
+			<p>
+				At first, I tried comparing images using the L2-norm to determine a numerical value correlated with alignment, as suggested by the project specifications. Then, I compared it with the other suggested metric, a normalized cross correlation metric, which calculates the dot product between each image normalized. This performed slightly better, so I chose to use this for the remainder of the project.
+			</p>
+			<h4>Naive Color Alignment:</h4>
+			<p>
+				Using the assumption that the pixel brightness between the 3 color channels were directly correlated, I tried applying a naive double for-loop search to maximize the alignment metric within a [-15, 15] range of pixel displacement in both x and y directions. This proved to be decent for many of the images. However, one particular example that performed poorly was Emir. This led me to believe the assumption that all colors were correlated may be incorrect, which is explored later in <a href="#extra">Bells and Whistles</a>.
+			</p>
+			<div class="image-comparison">
+				<div class="image-card">
+					<img src="img/final/assets/naive_color_1.jpg" alt="">
+					<p class="caption">Cathedral aligned using color correlated alignment</p>
+				</div>
+				<div class="image-card">
+					<img src="img/final/assets/naive_color_2.jpg" alt="">
+					<p class="caption">Emir misaligned using color correlated alignment</p>
+				</div>
+			</div>
+			<h4>Pyramiding:</h4>
+			<p>
+				Through testing both alignment, there was a consistent problem that the search was taking too long for larger images. Therefore, I used pyramiding, as mentioned in the project specification, to blur and downsample the image to a more manageable size, usually to 4 levels of halving, to search the [-15, 15] range of pixel displacements. Afterwards, I limit the search area to a [-3, 3] range of pixel displacements for subsequent lower levels of downsampling. This greatly reduced the runtime of the alignment algorithm. For Emir, the algorithm performed about 15x faster, reducing the runtime per image to around 20 seconds.
+			</p>
+			<div class="image-comparison">
+				<div class="image-card">
+					<img src="img/final/assets/pyramid_1.gif" alt="">
+					<p class="caption">Train alignment image progression (gif)</p>
+				</div>
+				<div class="image-card">
+					<img src="img/final/assets/pyramid_2.gif" alt="">
+					<p class="caption">Train alignment pyramid progression (gif)</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="" id="extra">
+			<h3>Bells & Whistles</h3>
+			<h4>Edge Detection:</h4>
+			<p>
+				Since naive color alignment did not work for all cases, I then tried using edge detection to preprocess the images. Replacing the assumption that all colors are correlated, we now assume that the edges in each channel are correlated. I used a Sobel Edge Filter to detect vertical and horizontal edges, and then combined the two filtered results by taking the absolute value, superimposing, and normalizing.
+			</p>
+			<div class="image-comparison">
+				<div class="image-card">
+					<img src="img/final/assets/edge_1.jpg" alt="">
+					<p class="caption">Emir better aligned using edge detection alignment</p>
+				</div>
+				<div class="image-card">
+					<img src="img/final/assets/edge_2.jpg" alt="">
+					<p class="caption">Emir preprocessed using Sobel Edge Filter</p>
+				</div>
+			</div>
+			<h4>Cropping:</h4>
+			<p>
+				A final optimization that I introduced was removing the borders of the image that might have negatively affected the alignment metrics, such as aligning to the borders rather than the image itself. This began as a naive crop to remove 4% off each horizontal edge, and 7% off each vertical edge. However, I realized that there might be merit in cropping further, as most of the image's subject are near the center pixels, so I implemented a more aggressive crop of 20% off each edge in large images. I kept a 10% crop off each edge in the smaller images to prevent more information loss than necessary. One mistake that occured while performing these crops was zeroing the original area that contained the borders. This helped raise the alignment metric unintentionally, and potentially kept less ideal alignment candidates. Thus, I simply cropped the image and effectively reduced the image size, and after finding the optimal alignment, then applied the roll to the original image. Through this optimization, the runtime per image dropped to around 13 seconds.
+			</p>
+			<div class="image-comparison">
+				<div class="image-card">
+					<img src="img/final/assets/crop_1.jpg" alt="">
+					<p class="caption">Cathedral pre-processed crop</p>
+				</div>
+				<div class="image-card">
+					<img src="img/final/assets/crop_2.jpg" alt="">
+					<p class="caption">Emir pre-processed crop</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="" id="results">
+			<h3>Results:</h3>
+			<div class="result-container">
+				<div class="image-card">
+					<h4>cathedral.jpg</h4>
+					<img src="img/final/cathedral.jpg" alt="">
+					<p>G: [2, 5]  R: [3, 12]</p>
+				</div>
+				<div class="image-card">
+					<h4>church.jpg</h4>
+					<img src="img/final/church.jpg" alt="">
+					<p>G: [4, 25]  R: [-4, 58]</p>
+				</div>
+				<div class="image-card">
+					<h4>emir.jpg</h4>
+					<img src="img/final/emir.jpg" alt="">
+					<p>G: [24, 49]  R: [40, 107]</p>
+				</div>
+				<div class="image-card">
+					<h4>harvesters.jpg</h4>
+					<img src="img/final/harvesters.jpg" alt="">
+					<p>G: [18, 60]  R: [14, 123]</p>
+				</div>
+				<div class="image-card">
+					<h4>icon.jpg</h4>
+					<img src="img/final/icon.jpg" alt="">
+					<p>G: [17, 41]  R: [23, 90]</p>
+				</div>
+				<div class="image-card">
+					<h4>lady.jpg</h4>
+					<img src="img/final/lady.jpg" alt="">
+					<p>G: [9, 56]  R: [12, 115]</p>
+				</div>
+				<div class="image-card">
+					<h4>melons.jpg</h4>
+					<img src="img/final/melons.jpg" alt="">
+					<p>G: [11, 81]  R: [13, 178]</p>
+				</div>
+				<div class="image-card">
+					<h4>monastery.jpg</h4>
+					<img src="img/final/monastery.jpg" alt="">
+					<p>G: [2, -3]  R: [2, 3]</p>
+				</div>
+				<div class="image-card">
+					<h4>onion_church.jpg</h4>
+					<img src="img/final/onion_church.jpg" alt="">
+					<p>G: [26, 51]  R: [36, 108]</p>
+				</div>
+				<div class="image-card">
+					<h4>sculpture.jpg</h4>
+					<img src="img/final/sculpture.jpg" alt="">
+					<p>G: [-11, 33]  R: [-27, 140]</p>
+				</div>
+				<div class="image-card">
+					<h4>self_portrait.jpg</h4>
+					<img src="img/final/self_portrait.jpg" alt="">
+					<p>G: [29, 78]  R: [37, 175]</p>
+				</div>
+				<div class="image-card">
+					<h4>three_generations.jpg</h4>
+					<img src="img/final/three_generations.jpg" alt="">
+					<p>G: [13, 53]  R: [9, 111]</p>
+				</div>
+				<div class="image-card">
+					<h4>tobolsk.jpg</h4>
+					<img src="img/final/tobolsk.jpg" alt="">
+					<p>G: [2, 3]  R: [3, 6]</p>
+				</div>
+				<div class="image-card">
+					<h4>train.jpg</h4>
+					<img src="img/final/train.jpg" alt="">
+					<p>G: [8, 42]  R: [32, 86]</p>
+				</div>
+			</div>
+		</section>
+	</body>
+</html>
