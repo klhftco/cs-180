@@ -113,6 +113,27 @@ section {
   }
 }
 
+#overview {
+  .image-comparison {
+    height: 40vh;
+    .image-card {
+
+      img {
+        height: 100%;
+        width: auto;
+      }
+    }
+  }
+
+  .caption {
+    text-align: center;
+    padding: 0;
+    margin-left: 0;
+    margin-top: 0.25vh;
+    font-size: 16px;
+  }
+}
+
 #results {
   width: 100%;
 
