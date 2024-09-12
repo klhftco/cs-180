@@ -1,0 +1,529 @@
+<html>
+	<head>
+		<title>CS 280A Proj2 - Leo Huang</title>
+		<link rel="stylesheet" href="styles.css">
+	</head>
+	<body>
+		<section class="" id="title">
+			<h1>CS 280A Project 2</h1>
+			<h1>Fun with Filters and Frequencies</h1>
+			<h2>Leo Huang</h2>
+			<img src="img/part2-2/butter_bloop.jpg" alt="">
+		</section>
+
+		<section class="" id="overview">
+			<h3>Overview</h3>
+			<p>
+				This project explores various papers and methods that use frequencies and filters to process images. First, we explore the use of filters to find edges. Then, we attempt to blur and sharpen images using different frequency manipulation, and use those frequencies to generate hybrid images following the approach described in the <a href="http://olivalab.mit.edu/publications/OlivaTorralb_Hybrid_Siggraph06.pdf">SIGGRAPH 2006 paper</a> by Oliva, Torralba, and Schyns. Finally, we explore multiresolution blending to create new images through the use of Gaussian and Laplacian stacks, following the approach described in the <a href="https://persci.mit.edu/pub_pdfs/spline83.pdf">1983 paper</a> by Burt and Adelson.
+			</p>
+		</section>
+
+		<section class="" id="part1">
+			<h3>Filtering and Convlutions</h3>
+			<h4>Finite Difference Operator</h4>
+			<p>
+				TEXT
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part1/grad_dx.png" alt="">
+					<p class="caption">Partial Derivative dx</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part1/grad_dy.png" alt="">
+					<p class="caption">Partial Derivative dy</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part1/grad_mag.png" alt="">
+					<p class="caption">Gradient Magnitude</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part1/grad_bin.png" alt="">
+					<p class="caption">Binarized Gradient</p>
+				</div>
+			</div>
+			<h4>Derivative fo Gaussian (DoG) Filter</h4>
+			<p>
+				TEXT
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part1/blur_dx.png" alt="">
+					<p class="caption">Partial Derivative dx</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part1/blur_dy.png" alt="">
+					<p class="caption">Partial Derivative dy</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part1/blur_mag.png" alt="">
+					<p class="caption">Gradient Magnitude</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part1/blur_bin.png" alt="">
+					<p class="caption">Binarized Gradient</p>
+				</div>
+			</div>
+			<p>
+				TEXT
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part1/DoG_dx.png" alt="">
+					<p class="caption">Partial Derivative dx</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part1/DoG_dy.png" alt="">
+					<p class="caption">Partial Derivative dy</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part1/DoG_mag.png" alt="">
+					<p class="caption">Gradient Magnitude</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part1/DoG_bin.png" alt="">
+					<p class="caption">Binarized Gradient</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="" id="part2-1">
+			<h3>Image Sharpening</h3>
+			<h4>Approach</h4>
+			<p>
+				TEXT
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part2-1/taj_a0.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-1/taj_a1.jpg" alt="">
+					<p class="caption">alpha = 1</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-1/taj_a2.jpg" alt="">
+					<p class="caption">alpha = 2</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-1/taj_a2.jpg" alt="">
+					<p class="caption">alpha = 4</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-1/taj_a16.jpg" alt="">
+					<p class="caption">alpha = 16</p>
+				</div>
+			</div>
+			<p>
+				TEXT
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part2-1/cat_a0.png" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-1/cat_a1.png" alt="">
+					<p class="caption">alpha = 1</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-1/cat_a2.png" alt="">
+					<p class="caption">alpha = 2</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-1/cat_a2.png" alt="">
+					<p class="caption">alpha = 4</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-1/cat_a16.png" alt="">
+					<p class="caption">alpha = 16</p>
+				</div>
+			</div>
+			<h4>Resharpening a Blurred Image</h4>
+			<p>
+				TEXT
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/data/cookie.jpg" alt="">
+					<p class="caption">original image</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-1/cookie_a0.jpg" alt="">
+					<p class="caption">blurred image</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-1/cookie_a2.jpg" alt="">
+					<p class="caption">alpha = 2</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-1/cookie_a8.jpg" alt="">
+					<p class="caption">alpha = 8</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-1/cookie_a16.jpg" alt="">
+					<p class="caption">alpha = 16</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="" id="part2-2">
+			<h3>Hybrid Images</h3>
+			<h4>Approach</h4>
+			<p>
+				TEXT
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/data/derek.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/data/nutmeg.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-2/derek_8_nutmeg_20.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-2/nutmeg_8_derek_20.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+			</div>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part2-2/derek_8_nutmeg_20.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-2/derek_8_nutmeg_20_lcol.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-2/derek_8_nutmeg_20_hcol.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-2/derek_8_nutmeg_20_gray.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+			</div>
+			<p>
+				TEXT
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/data/tobey_no_glasses.jpeg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/data/tobey_glasses.jpeg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-2/no_10_glass_3.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-2/no_10_glass_3.jpg" alt="">
+					<p class="caption">TODO </p>
+				</div>
+			</div>
+			<p>
+				TEXT
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part2-2/cat_7_fly_8.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-2/cat_7_fly_8_lcol.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-2/cat_7_fly_8_hcol.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-2/cat_7_fly_8_gray.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+			</div>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part2-2/fly_5_cat_8.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-2/fly_5_cat_8_lcol.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-2/fly_5_cat_8_hcol.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-2/fly_5_cat_8_gray.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+			</div>
+			<p>
+				TEXT
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part2-2/fft_butterfly.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-2/fft_butterfly_filter.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-2/fft_caterpillar.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-2/fft_caterpillar_filter.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-2/fft_hybrid.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="" id="part2-3">
+			<h3>Gaussian and Laplacian Stacks</h3>
+			<h4>Approach</h4>
+			<p>
+				TEXT
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part2-3/apple_l0.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/amask_l0.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/oraple_l0.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/omask_l0.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/orange_l0.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+			</div>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part2-3/apple_l2.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/amask_l2.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/oraple_l2.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/omask_l2.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/orange_l2.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+			</div>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part2-3/apple_l4.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/amask_l4.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/oraple_l4.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/omask_l4.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/orange_l4.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+			</div>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part2-3/apple_l6.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/amask_l6.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/oraple_l6.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/omask_l6.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/orange_l6.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+			</div>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part2-3/apple.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/amask.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/oraple.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/omask.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/orange.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="" id="part2-4">
+			<h3>Multiresolution Blending</h3>
+			<h4>Approach</h4>
+			<p>
+				TEXT
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/data/apple.jpeg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/data/orange.jpeg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/vert_mask.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/oraple.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+			</div>
+			<p>
+				TEXT
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/data/monument.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/data/rocket.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-4/monuket_mask.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-4/monuket.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+			</div>
+			<p>
+				TEXT
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/data/monument.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/data/campanile.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-4/wampanile_mask.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-4/wampanile.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+			</div>
+			<p>
+				TEXT
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/data/cat_eat.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/data/squirrel.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-4/cat_eat_squirrel_mask.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-4/cat_eat_squirrel.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+			</div>
+			<p>
+				TEXT
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/data/cookie.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/data/cookie2.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-4/cookie_cookie_mask.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-4/cookie_cookie.jpg" alt="">
+					<p class="caption">alpha = 0</p>
+				</div>
+			</div>
+		</section>
+
+	</body>
+</html>
