@@ -9,8 +9,7 @@
 			<h1>Face Morphing</h1>
 			<h2>Leo Huang</h2>
 			<div class="image-card">
-				<img class="no-square" src="img/part-3/morph.gif" alt="">
-				<!-- TODO: REPLACE GIF WITH BOOMER -->
+				<img class="" src="img/part-3/morph_long.gif" alt="">
 				<p class="caption">resulting <a href="#part3">morph sequence</a> between me and Willem</p>
 			</div>
 		</section>
@@ -18,15 +17,14 @@
 		<section class="" id="overview">
 			<h3>Overview</h3>
 			<p>
-				TEXT
+				This project explores the use of morphs to create animations between various faces. A morph is a simultaenous warp of the image shape and a cross-dissolve of the image colors. We explore the implementation of this using Delaunay triangulation, affine transformation calcuation, and color cross-dissolving. In later parts, we compute the mean face of populations to extrapolate and create caricatures.
 			</p>
 		</section>
 
 		<section class="" id="part1">
 			<h3>Defining Correspondences</h3>
-			<h4>Finite Difference Operator</h4>
 			<p>
-				TEXT
+				To define correspondences between two images, the images were first cropped and rescaled such that the faces have relatively similar aspect ratios. I chose to use myself and the popular Spiderman villain, Willem Dafoe. After, using the given labeling tool, I generated 53 points of correspondence for each image, including the four corners of the image. Finally, I used <code>scipy.spatial.Delaunay</code> to generate a Delaunay triangulation using the average shape of the 2 sets of correspondences.
 			</p>
 			<div class="image-row">
 				<div class="image-card">
@@ -50,9 +48,8 @@
 
 		<section class="" id="part2">
 			<h3>Computing the "Mid-Way Face"</h3>
-			<h4>Approach</h4>
 			<p>
-				TEXT
+				To find the mid-way face, I first compute the average shape between the two images using the following logic: <code>avg_points = 0.5 * im1_points + 0.5 * im2_points</code>. Then, I calculate the affine transformation matrix between the average shape triangle and each original shape's triangle, which is used during the inverse warping step. In the inverse warping step, a polygon mask is generated in the average shape frame, and then transformed using the matrix back into the original image frame. From there, the pixel color values can be sampled from the original image via interpolation back filled into the average shape image. Finally, the 2 generated warp images are cross-dissolved by averaging. I found that using <code>scipy.interpolate.interpn</code> gave a much faster runtime (~6x) compared to <code>scipy.interpolate.griddata</code> enabled by the use case being a dense polygon mask rather than scattered unstructured data.
 			</p>
 			<div class="image-row">
 				<div class="image-card">
@@ -68,31 +65,20 @@
 					<p class="caption">Willem</p>
 				</div>
 			</div>
-			<!-- <div class="image-row">
-				<div class="image-card">
-					<img src="img/part-2/construct.gif" alt="">
-					<p class="caption">reconstruction process</p>
-				</div>
-			</div> -->
 		</section>
 
 		<section class="" id="part3">
 			<h3>Generating a Morph Sequence</h3>
-			<h4>Approach</h4>
 			<p>
-				TEXT
+				With the previous algorithm to compute the midway frames, we can make a morph sequence. I generated a sequence of 45 frames, displayed at 30 frames per second. Throughout the sequence, the shape warping and color cross-dissolving weights were slowly increased from 0 to 1 to slowly approach the destination image. I also illustrate how the triangles in each midway frame are back filled since I thought it was pretty cool.
 			</p>
 			<div class="image-row">
 				<div class="image-card">
 					<img src="img/part-2/construct.gif" alt="">
 					<p class="caption">resconstruction process</p>
 				</div>
-				<!-- <div class="image-card">
-					<img src="img/part-2/img_midway_53.png" alt="">
-					<p class="caption">wasian Willem</p>
-				</div> -->
 				<div class="image-card">
-					<img src="img/part-3/morph.gif" alt="">
+					<img src="img/part-3/morph_pause.gif" alt="">
 					<p class="caption">final morph sequence</p>
 				</div>
 			</div>
@@ -102,7 +88,7 @@
 			<h3>Calculating the "Mean Face" of a Population</h3>
 			<h4>FEI Database</h4>
 			<p>
-				TEXT <code>some code</code>
+				The population I tested on was the <a href="https://fei.edu.br/~cet/facedatabase.html">FEI face database</a>, which is a Brazilian face database containing images of 200 individuals taken at the Artificial Intelligence Laboratory of FEI in S&atilde;o Bernardo do Campo, S&atilde;o Paulo, Brazil. There are 100 male and female subjects each, ranging bewteen 19 and 40 years old.
 			</p>
 			<div class="image-row">
 				<div class="image-card">
@@ -173,7 +159,7 @@
 				</div>
 			</div>
 			<p>
-				TEXT <code>some code</code>
+				Additionally, the dataset also provides a subset of manually aligned frontal images of each individual and its 46-point correspondences. There are 2 main subpopulations which we use to generate two mean faces: neutral faces and expression faces.
 			</p>
 			<div class="image-row">
 				<div class="image-card">
@@ -193,9 +179,9 @@
 					<p class="caption">expression triangulation</p>
 				</div>
 			</div>
-			<h4>Mean Face</h4>
+			<h4>Calcuating Mean Face</h4>
 			<p>
-				TEXT <code>some code</code>
+				As follows from before, the mean face shape was calculated by averaging the shape contribution from all 200 individuals in each neutral and expression populations. This was then used to warp all the faces using our morph function, however, this time with the cross-dissolve fraction set to 0 and shape-warp fraction to 1 instead. This is to preserve the original image pixel values, just simply transformed in an affine manner to match the average face shape. Finally, all 200 images in each population can be cross-dissolved to produce an overall average face image.
 			</p>
 			<div class="image-row">
 				<div class="image-card">
@@ -217,7 +203,7 @@
 			</div>
 			<h4>Warping onto the Mean Face</h4>
 			<p>
-				TEXT <code>some code</code>
+				Here are some examples of the individuals warped onto the average neutral and average expression face respectively.
 			</p>
 			<div class="image-row">
 				<div class="image-card">
@@ -288,7 +274,7 @@
 				</div> -->
 			</div>
 			<p>
-				TEXT <code>some code</code>
+				Here, I also warped my own face to the average expression face shape, and the average expression face my own face shape. This entailed first selecting the appropriate 46-point correspondence set, and then morphing as done before.
 			</p>
 			<div class="image-row">
 				<div class="image-card">
@@ -312,9 +298,8 @@
 
 		<section class="" id="part5">
 			<h3>Extrapolating Caricatures from the Mean</h3>
-			<h4>Approach</h4>
 			<p>
-				TEXT <code>some code</code>
+				Finally, using the calculated mean face for the expression population, I also generated a few caricatures by choosing shape-warp fractions beyond the [0,1] interval. Extrapolating from the mean face, we can choose to exaggerate either my own face's features or the popluation's average face's features. We can observe that between the extra average face and the original self-to-average warp, the result is much wider and seems sort of flattened. On the other hand, the extra self face seems to emphasize the slanted eye and mouth shapes.
 			</p>
 			<div class="image-row">
 				<div class="image-card">
@@ -336,7 +321,7 @@
 			<h3>Additional Work</h3>
 			<h4>Changing Gender</h4>
 			<p>
-				TEXT <code>some code</code>
+				Another thing I explored was using our morph algorithm to change my gender using an average Taiwanese female face I found online.
 			</p>
 			<div class="image-row">
 				<div class="image-card">
@@ -357,7 +342,7 @@
 				</div>
 			</div>
 			<p>
-				TEXT <code>some code</code>
+				After producing the necessary correspondence points, I tested applying a shape-only warp, a color-only dissolve, and finally a combination between the two parameters to generate a few possibilities for my female self.
 			</p>
 			<div class="image-row">
 				<div class="image-card">
