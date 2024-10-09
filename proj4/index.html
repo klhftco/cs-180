@@ -1,0 +1,403 @@
+<html>
+	<head>
+		<title>CS 280A Proj4 - Leo Huang</title>
+		<link rel="stylesheet" href="styles.css">
+	</head>
+	<body>
+		<section class="" id="title">
+			<h1>CS 280A Project 4</h1>
+			<h1>Autostitching Photo Mosaics</h1>
+			<h2>Leo Huang</h2>
+			<div class="image-card">
+				<img class="no-square" src="img/part4/stitch.jpg" alt="">
+				<p class="caption">an attempt at stitching together a <a href="#part4">mosaic</a></p>
+			</div>
+		</section>
+
+		<section class="" id="overview">
+			<h3>Overview</h3>
+			<p>
+				This project explores different aspects of image warping to apply to image mosaicing. We take various photos from the same point of view with overlapping fields of views. Using these images, we can create an image mosaic by registering, projective warping, resampling, and compositing them.
+				<!-- In later parts, we also explore methods to automatically find point correspondences and stitch images. -->
+			</p>
+		</section>
+
+		<section class="" id="part1">
+			<h3>Compute Homographies</h3>
+			<h4>Approach</h4>
+			<p>
+				After manually marking point correspondences, we can compute the homography by formulating a linear equation and solve using the least squares solution. Once all the coefficients of the homography matrix are recovered, we can construct the transformation and use it to warp from one image perspective to another image perspective.
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part1/im1_pts.jpg" alt="">
+					<p class="caption">image of room (left)</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part1/im2_pts.jpg" alt="">
+					<p class="caption">image of room (right)</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="" id="part2">
+			<h3>Image Warping</h3>
+			<h4>Approach</h4>
+			<p>
+				To warp our image, we begin by creating a polygon mask of the image to be warped and warping it to the destination perspective. We then use inverse warping to sample and warp the image into the destination plane. The bounding box of the newly warped image is determined by taking the minimum and maximum x and y coordinates from the warped polygon mask.
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part2/im2_warp.jpg" alt="">
+					<p class="caption">right image (warped)</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2/warp.jpg" alt="">
+					<p class="caption">images overlayed</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="" id="part3">
+			<h3>Image Rectification</h3>
+			<h4>Approach</h4>
+			<p>
+				With our warping functions, we can now rectify images of planar surfaces to be frontal-parallel.
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part3/box.jpg" alt="">
+					<p class="caption">box</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part3/box_rect_nocrop.jpg" alt="">
+					<p class="caption">box (rectified)</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part3/box_rect.jpg" alt="">
+					<p class="caption">box (rectified + crop)</p>
+				</div>
+			</div>
+			<div class="image-row">
+				<div class="image-card">
+					<img class="border" src="img/part3/sticker.jpg" alt="">
+					<p class="caption">sticker</p>
+				</div>
+				<div class="image-card">
+					<img class="border" src="img/part3/sticker_rect_nocrop.jpg" alt="">
+					<p class="caption">sticker (rectified)</p>
+				</div>
+				<div class="image-card">
+					<img class="border" src="img/part3/sticker_rect.jpg" alt="">
+					<p class="caption">sticker (rectified + crop)</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="" id="part4">
+			<h3>Generating Mosaics</h3>
+			<h4>Approach</h4>
+			<p>
+				To create a mosaic from overlapping images, a similar workflow is utilized from rectification. First, create a canvas image which all images are warped onto. The image histograms are normalized to account for exposure differences. Then, using the marked correspondences, we compute the homography and warp all the images onto the canvas plane. For each image, a blending mask is generated using the "distance to zero" metric computed with <code>scipy.ndimage.distance_transform_edt</code>. With these metrics, we calculate a mask for which regions each image should be used. Finally, Laplacian Pyramid blending is performed on the masks to smooth the overlapping regions of the image and reduce any edge artifacts.
+			</p>
+			<h4>Distance Metric</h4>
+			<p>
+				After computing the distance metric using <code>scipy.ndimage.distance_transform_edt</code>, we can compare at each pixel which image's distance metric is higher, and generate a region where each image should be used when blending together the mosaic.
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part4/room_dist1.jpg" alt="">
+					<p class="caption">distance transform on room (left)</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part4/room_dist2.jpg" alt="">
+					<p class="caption">distance transform on room (right)</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part4/room_mask1.jpg" alt="">
+					<p class="caption">mask for room (left)</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part4/room_mask2.jpg" alt="">
+					<p class="caption">mask for room (right)</p>
+				</div>
+			</div>
+			<h3>Results</h3>
+			<h4>Room</h4>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part4/room_pts1.jpg" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="img/part4/room_pts2.jpg" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="img/part4/room_pts3.jpg" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="img/part4/room_pts4.jpg" alt="">
+					<p class="caption"></p>
+				</div>
+			</div>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part4/room_noblend.jpg" alt="">
+					<p class="caption">simple linear blending</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part4/room.jpg" alt="">
+					<p class="caption">with Laplacian blending</p>
+				</div>
+			</div>
+			<h4>Lake</h4>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part4/lake_pts1.jpg" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="img/part4/lake_pts2.jpg" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="img/part4/lake.jpg" alt="">
+					<p class="caption">Laplacian blending</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part4/lake_norm.jpg" alt="">
+					<p class="caption">Laplacian blending + normalizing</p>
+				</div>
+			</div>
+			<h4>House</h4>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part4/house_pts1.jpg" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="img/part4/house_pts2.jpg" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="img/part4/house_pts3.jpg" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="img/part4/house_pts4.jpg" alt="">
+					<p class="caption"></p>
+				</div>
+			</div>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part4/house_noblend.jpg" alt="">
+					<p class="caption">linear</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part4/house_noblend_norm.jpg" alt="">
+					<p class="caption">linear + normalization</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part4/house.jpg" alt="">
+					<p class="caption">Laplacian</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part4/house_norm.jpg" alt="">
+					<p class="caption">Laplacian + normalization</p>
+				</div>
+			</div>
+			<h4>Trees</h4>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part4/trees_pts1.jpg" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="img/part4/trees_pts2.jpg" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="img/part4/trees_pts3.jpg" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="img/part4/trees_pts4.jpg" alt="">
+					<p class="caption"></p>
+				</div>
+			</div>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/part4/trees_noblend.jpg" alt="">
+					<p class="caption">linear</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part4/trees_noblend_norm.jpg" alt="">
+					<p class="caption">linear + normalization</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part4/trees.jpg" alt="">
+					<p class="caption">Laplacian</p>
+				</div>
+			 	<div class="image-card">
+					<img src="img/part4/trees_norm.jpg" alt="">
+					<p class="caption">Laplacian + normalization</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- <section class="" id="part5">
+			<h3>Detecting Corner Features</h3>
+			<h4>Approach</h4>
+			<p>
+				To implement multiresolution blending of images, we utilize the Laplacian stacks and combine them using a Gaussian stack of a chosen mask. The Gaussian stack of the mask blurs the edge within the mask, and helps blend the frequencies of each image. The blending was implemented in the following: <code> blend = left_lstack * mask_gstack + right_lstack * (1 - mask_gstack)</code>. Thus, the mask blurs the images' features at the edge boundaries, and allow for a clean blend between the images. In this section, I also explore the effect of grayscaling and color, but ultimately find the incorporation of color to be more appealing.
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/data/apple.jpeg" alt="">
+					<p class="caption">apple</p>
+				</div>
+				<div class="image-card">
+					<img src="img/data/orange.jpeg" alt="">
+					<p class="caption">orange</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/vert_mask.jpg" alt="">
+					<p class="caption">mask</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/oraple.jpg" alt="">
+					<p class="caption">oraple</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="" id="part6">
+			<h3>Detecting Corner Features</h3>
+			<h4>Naive Approach</h4>
+			<p>
+				To implement multiresolution blending of images, we utilize the Laplacian stacks and combine them using a Gaussian stack of a chosen mask. The Gaussian stack of the mask blurs the edge within the mask, and helps blend the frequencies of each image. The blending was implemented in the following: <code> blend = left_lstack * mask_gstack + right_lstack * (1 - mask_gstack)</code>. Thus, the mask blurs the images' features at the edge boundaries, and allow for a clean blend between the images. In this section, I also explore the effect of grayscaling and color, but ultimately find the incorporation of color to be more appealing.
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/data/apple.jpeg" alt="">
+					<p class="caption">apple</p>
+				</div>
+				<div class="image-card">
+					<img src="img/data/orange.jpeg" alt="">
+					<p class="caption">orange</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/vert_mask.jpg" alt="">
+					<p class="caption">mask</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/oraple.jpg" alt="">
+					<p class="caption">oraple</p>
+				</div>
+			</div>
+			<h4>Adaptive Non-Maximal Suppression</h4>
+			<p>
+				To implement multiresolution blending of images, we utilize the Laplacian stacks and combine them using a Gaussian stack of a chosen mask. The Gaussian stack of the mask blurs the edge within the mask, and helps blend the frequencies of each image. The blending was implemented in the following: <code> blend = left_lstack * mask_gstack + right_lstack * (1 - mask_gstack)</code>. Thus, the mask blurs the images' features at the edge boundaries, and allow for a clean blend between the images. In this section, I also explore the effect of grayscaling and color, but ultimately find the incorporation of color to be more appealing.
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/data/apple.jpeg" alt="">
+					<p class="caption">apple</p>
+				</div>
+				<div class="image-card">
+					<img src="img/data/orange.jpeg" alt="">
+					<p class="caption">orange</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/vert_mask.jpg" alt="">
+					<p class="caption">mask</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/oraple.jpg" alt="">
+					<p class="caption">oraple</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="" id="part7">
+			<h3>Extracting Feature Descriptors</h3>
+			<h4>Approach</h4>
+			<p>
+				To implement multiresolution blending of images, we utilize the Laplacian stacks and combine them using a Gaussian stack of a chosen mask. The Gaussian stack of the mask blurs the edge within the mask, and helps blend the frequencies of each image. The blending was implemented in the following: <code> blend = left_lstack * mask_gstack + right_lstack * (1 - mask_gstack)</code>. Thus, the mask blurs the images' features at the edge boundaries, and allow for a clean blend between the images. In this section, I also explore the effect of grayscaling and color, but ultimately find the incorporation of color to be more appealing.
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/data/apple.jpeg" alt="">
+					<p class="caption">apple</p>
+				</div>
+				<div class="image-card">
+					<img src="img/data/orange.jpeg" alt="">
+					<p class="caption">orange</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/vert_mask.jpg" alt="">
+					<p class="caption">mask</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/oraple.jpg" alt="">
+					<p class="caption">oraple</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="" id="part8">
+			<h3>Feature Matching</h3>
+			<h4>Approach</h4>
+			<p>
+				To implement multiresolution blending of images, we utilize the Laplacian stacks and combine them using a Gaussian stack of a chosen mask. The Gaussian stack of the mask blurs the edge within the mask, and helps blend the frequencies of each image. The blending was implemented in the following: <code> blend = left_lstack * mask_gstack + right_lstack * (1 - mask_gstack)</code>. Thus, the mask blurs the images' features at the edge boundaries, and allow for a clean blend between the images. In this section, I also explore the effect of grayscaling and color, but ultimately find the incorporation of color to be more appealing.
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/data/apple.jpeg" alt="">
+					<p class="caption">apple</p>
+				</div>
+				<div class="image-card">
+					<img src="img/data/orange.jpeg" alt="">
+					<p class="caption">orange</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/vert_mask.jpg" alt="">
+					<p class="caption">mask</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/oraple.jpg" alt="">
+					<p class="caption">oraple</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="" id="part8">
+			<h3>Compute Homographies using RANSAC</h3>
+			<h4>Approach</h4>
+			<p>
+				To implement multiresolution blending of images, we utilize the Laplacian stacks and combine them using a Gaussian stack of a chosen mask. The Gaussian stack of the mask blurs the edge within the mask, and helps blend the frequencies of each image. The blending was implemented in the following: <code> blend = left_lstack * mask_gstack + right_lstack * (1 - mask_gstack)</code>. Thus, the mask blurs the images' features at the edge boundaries, and allow for a clean blend between the images. In this section, I also explore the effect of grayscaling and color, but ultimately find the incorporation of color to be more appealing.
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/data/apple.jpeg" alt="">
+					<p class="caption">apple</p>
+				</div>
+				<div class="image-card">
+					<img src="img/data/orange.jpeg" alt="">
+					<p class="caption">orange</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/vert_mask.jpg" alt="">
+					<p class="caption">mask</p>
+				</div>
+				<div class="image-card">
+					<img src="img/part2-3/oraple.jpg" alt="">
+					<p class="caption">oraple</p>
+				</div>
+			</div>
+		</section>
+ -->
+	</body>
+</html>
