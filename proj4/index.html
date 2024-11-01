@@ -18,7 +18,7 @@
 			<h3>Overview</h3>
 			<p>
 				This project explores different aspects of image warping to apply to image mosaicing. We take various photos from the same point of view with overlapping fields of views. Using these images, we can create an image mosaic by registering, projective warping, resampling, and compositing them.
-				<!-- In later parts, we also explore methods to automatically find point correspondences and stitch images. -->
+				In later parts, we also explore methods to automatically find point correspondences and stitch images based on methods from the paper <a href="https://inst.eecs.berkeley.edu/~cs180/fa24/hw/proj4/Papers/MOPS.pdf">“Multi-Image Matching using Multi-Scale Oriented Patches”</a> by Brown et al..
 			</p>
 		</section>
 
@@ -113,6 +113,8 @@
 					<img src="img/part4/room_dist2.jpg" alt="">
 					<p class="caption">distance transform on room (right)</p>
 				</div>
+			</div>
+			<div class="image-row">
 				<div class="image-card">
 					<img src="img/part4/room_mask1.jpg" alt="">
 					<p class="caption">mask for room (left)</p>
@@ -122,7 +124,10 @@
 					<p class="caption">mask for room (right)</p>
 				</div>
 			</div>
-			<h3>Results</h3>
+		</section>
+
+		<section class="" id="part5">
+			<h3>Results (w/ manual correspondences)</h3>
 			<h4>Room</h4>
 			<div class="image-row">
 				<div class="image-card">
@@ -152,6 +157,10 @@
 					<p class="caption">with Laplacian blending</p>
 				</div>
 			</div>
+			<p>
+				For all the lakeside views, I think due to poor camera work such as camera movement and exposure differences, the stitches were much harder to obtain.
+				We can observe lots of edge artifacts and ghosting due to the color differences, which persisted even through the laplacian blending and normalization.
+			</p>
 			<h4>Lake</h4>
 			<div class="image-row">
 				<div class="image-card">
@@ -245,159 +254,166 @@
 					<p class="caption">Laplacian + normalization</p>
 				</div>
 			</div>
-		</section>
-
-		<!-- <section class="" id="part5">
-			<h3>Detecting Corner Features</h3>
-			<h4>Approach</h4>
+			<h4>Other</h4>
 			<p>
-				To implement multiresolution blending of images, we utilize the Laplacian stacks and combine them using a Gaussian stack of a chosen mask. The Gaussian stack of the mask blurs the edge within the mask, and helps blend the frequencies of each image. The blending was implemented in the following: <code> blend = left_lstack * mask_gstack + right_lstack * (1 - mask_gstack)</code>. Thus, the mask blurs the images' features at the edge boundaries, and allow for a clean blend between the images. In this section, I also explore the effect of grayscaling and color, but ultimately find the incorporation of color to be more appealing.
+				These were performed on images I took later after observing some of the issues with my image data, and as a result, these stitches are much more satisfying to look at.
 			</p>
 			<div class="image-row">
 				<div class="image-card">
-					<img src="img/data/apple.jpeg" alt="">
-					<p class="caption">apple</p>
+					<img src="img/part4/class.jpg" alt="">
+					<p class="caption"></p>
 				</div>
 				<div class="image-card">
-					<img src="img/data/orange.jpeg" alt="">
-					<p class="caption">orange</p>
+					<img src="img/part4/corn.jpg" alt="">
+					<p class="caption"></p>
 				</div>
 				<div class="image-card">
-					<img src="img/part2-3/vert_mask.jpg" alt="">
-					<p class="caption">mask</p>
-				</div>
-				<div class="image-card">
-					<img src="img/part2-3/oraple.jpg" alt="">
-					<p class="caption">oraple</p>
+					<img src="img/part4/lab.jpg" alt="">
+					<p class="caption"></p>
 				</div>
 			</div>
 		</section>
 
 		<section class="" id="part6">
 			<h3>Detecting Corner Features</h3>
-			<h4>Naive Approach</h4>
+			<h4>Approach</h4>
 			<p>
-				To implement multiresolution blending of images, we utilize the Laplacian stacks and combine them using a Gaussian stack of a chosen mask. The Gaussian stack of the mask blurs the edge within the mask, and helps blend the frequencies of each image. The blending was implemented in the following: <code> blend = left_lstack * mask_gstack + right_lstack * (1 - mask_gstack)</code>. Thus, the mask blurs the images' features at the edge boundaries, and allow for a clean blend between the images. In this section, I also explore the effect of grayscaling and color, but ultimately find the incorporation of color to be more appealing.
+				To begin implementing automatic stitching, we can use the Harris corner detector to detect potential correspondences. This functions by computing the sum of product of gradients throughout the image to determine whether or not a pixel corresponds to a corner.
 			</p>
 			<div class="image-row">
 				<div class="image-card">
-					<img src="img/data/apple.jpeg" alt="">
-					<p class="caption">apple</p>
+					<img src="img/partb/harris_corners.jpg" alt="">
+					<p class="caption">harris corners</p>
 				</div>
 				<div class="image-card">
-					<img src="img/data/orange.jpeg" alt="">
-					<p class="caption">orange</p>
-				</div>
-				<div class="image-card">
-					<img src="img/part2-3/vert_mask.jpg" alt="">
-					<p class="caption">mask</p>
-				</div>
-				<div class="image-card">
-					<img src="img/part2-3/oraple.jpg" alt="">
-					<p class="caption">oraple</p>
-				</div>
-			</div>
-			<h4>Adaptive Non-Maximal Suppression</h4>
-			<p>
-				To implement multiresolution blending of images, we utilize the Laplacian stacks and combine them using a Gaussian stack of a chosen mask. The Gaussian stack of the mask blurs the edge within the mask, and helps blend the frequencies of each image. The blending was implemented in the following: <code> blend = left_lstack * mask_gstack + right_lstack * (1 - mask_gstack)</code>. Thus, the mask blurs the images' features at the edge boundaries, and allow for a clean blend between the images. In this section, I also explore the effect of grayscaling and color, but ultimately find the incorporation of color to be more appealing.
-			</p>
-			<div class="image-row">
-				<div class="image-card">
-					<img src="img/data/apple.jpeg" alt="">
-					<p class="caption">apple</p>
-				</div>
-				<div class="image-card">
-					<img src="img/data/orange.jpeg" alt="">
-					<p class="caption">orange</p>
-				</div>
-				<div class="image-card">
-					<img src="img/part2-3/vert_mask.jpg" alt="">
-					<p class="caption">mask</p>
-				</div>
-				<div class="image-card">
-					<img src="img/part2-3/oraple.jpg" alt="">
-					<p class="caption">oraple</p>
+					<img src="img/partb/harris_corners_2000.jpg" alt="">
+					<p class="caption">top 2000 harris points</p>
 				</div>
 			</div>
 		</section>
 
 		<section class="" id="part7">
+			<h3>Adaptive Non-Maximal Suprression (ANMS)</h3>
+			<h4>Approach</h4>
+			<p>
+				Because the output of the Harris corner detector is much to dense, we use an algorithm described in the <a href="https://inst.eecs.berkeley.edu/~cs180/fa24/hw/proj4/Papers/MOPS.pdf">MOPS paper</a> to only select points that are strong and evenly spaced throughout this image. With adaptive non-maximal suppression, a target number of points was generated, and then a suppression radius was empirically found to match the target number of remaining points.
+			</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/partb/anms_r8.jpg" alt="">
+					<p class="caption">ANMS at r = 8</p>
+				</div>
+				<div class="image-card">
+					<img src="img/partb/anms_r16.jpg" alt="">
+					<p class="caption">ANMS at r = 16</p>
+				</div>
+				<div class="image-card">
+					<img src="img/partb/anms_r24.jpg" alt="">
+					<p class="caption">ANMS at r = 24</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="" id="part8">
 			<h3>Extracting Feature Descriptors</h3>
 			<h4>Approach</h4>
 			<p>
-				To implement multiresolution blending of images, we utilize the Laplacian stacks and combine them using a Gaussian stack of a chosen mask. The Gaussian stack of the mask blurs the edge within the mask, and helps blend the frequencies of each image. The blending was implemented in the following: <code> blend = left_lstack * mask_gstack + right_lstack * (1 - mask_gstack)</code>. Thus, the mask blurs the images' features at the edge boundaries, and allow for a clean blend between the images. In this section, I also explore the effect of grayscaling and color, but ultimately find the incorporation of color to be more appealing.
+				As suggested in the paper, from each of the remaining candidate points, a feature descriptor should be created which extracts features from the points. Here, we sample 40x40 pixel patches, and then downsample each to an 8x8 pixel patch through Gaussian blurring. We then unbias and normalize the patches, creating feature descriptors that extract the axis-aligned features at each point of interest.
 			</p>
 			<div class="image-row">
 				<div class="image-card">
-					<img src="img/data/apple.jpeg" alt="">
-					<p class="caption">apple</p>
+					<img src="img/partb/ft_desc.jpg" alt="">
+					<p class="caption">feature descriptor on image</p>
 				</div>
 				<div class="image-card">
-					<img src="img/data/orange.jpeg" alt="">
-					<p class="caption">orange</p>
-				</div>
-				<div class="image-card">
-					<img src="img/part2-3/vert_mask.jpg" alt="">
-					<p class="caption">mask</p>
-				</div>
-				<div class="image-card">
-					<img src="img/part2-3/oraple.jpg" alt="">
-					<p class="caption">oraple</p>
+					<img src="img/partb/ft_desc_patch.jpg" alt="">
+					<p class="caption">feature descriptor patch</p>
 				</div>
 			</div>
 		</section>
 
-		<section class="" id="part8">
+		<section class="" id="part9">
 			<h3>Feature Matching</h3>
 			<h4>Approach</h4>
 			<p>
-				To implement multiresolution blending of images, we utilize the Laplacian stacks and combine them using a Gaussian stack of a chosen mask. The Gaussian stack of the mask blurs the edge within the mask, and helps blend the frequencies of each image. The blending was implemented in the following: <code> blend = left_lstack * mask_gstack + right_lstack * (1 - mask_gstack)</code>. Thus, the mask blurs the images' features at the edge boundaries, and allow for a clean blend between the images. In this section, I also explore the effect of grayscaling and color, but ultimately find the incorporation of color to be more appealing.
+				With our feature descriptors, the paper describes a method to match our features together - use Lowe's ratio to remove non-matches. To do this, we first compute the first two nearest neighbors, 1-NN and 2-NN, of each feature patch between images through sum squared difference or Euclidean distance. Then, we only keep matches where the <code>1-NN distance / 2-NN distance < threshold</code>, which suggests that the match is valid.
 			</p>
 			<div class="image-row">
 				<div class="image-card">
-					<img src="img/data/apple.jpeg" alt="">
-					<p class="caption">apple</p>
+					<img src="img/partb/ft_match_1.jpg" alt="">
+					<p class="caption">room (left) points</p>
 				</div>
 				<div class="image-card">
-					<img src="img/data/orange.jpeg" alt="">
-					<p class="caption">orange</p>
+					<img src="img/partb/ft_match_1_square.jpg" alt="">
+					<p class="caption">room (left) features</p>
+				</div>
+			</div>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/partb/ft_match_2.jpg" alt="">
+					<p class="caption">room (right) points</p>
 				</div>
 				<div class="image-card">
-					<img src="img/part2-3/vert_mask.jpg" alt="">
-					<p class="caption">mask</p>
-				</div>
-				<div class="image-card">
-					<img src="img/part2-3/oraple.jpg" alt="">
-					<p class="caption">oraple</p>
+					<img src="img/partb/ft_match_2_square.jpg" alt="">
+					<p class="caption">room (right) features</p>
 				</div>
 			</div>
 		</section>
 
-		<section class="" id="part8">
+		<section class="" id="part10">
 			<h3>Compute Homographies using RANSAC</h3>
 			<h4>Approach</h4>
 			<p>
-				To implement multiresolution blending of images, we utilize the Laplacian stacks and combine them using a Gaussian stack of a chosen mask. The Gaussian stack of the mask blurs the edge within the mask, and helps blend the frequencies of each image. The blending was implemented in the following: <code> blend = left_lstack * mask_gstack + right_lstack * (1 - mask_gstack)</code>. Thus, the mask blurs the images' features at the edge boundaries, and allow for a clean blend between the images. In this section, I also explore the effect of grayscaling and color, but ultimately find the incorporation of color to be more appealing.
+				Although Lowe's trick does greatly reduce the number of outliers, the set of matches can still contain incorrect matches and outliers. To address this, we use random sample consensus (RANSAC) to increase the robustness of our homography estimates. 4 pairs of points are randomly sampled from the remaining matches, and an exact homography is computed using these points. The homography is then applied on all the points, and a set of inliers is generated by computing the Euclidean distance between the transformed points and their corresponding destination matches. We repeat this process a few hundred times, and ultimately keep the largest set of inliers, from which we compute the final homography used to warp the images.
 			</p>
+			<p>No visualization here :(</p>
+		</section>
+
+		<section class="" id="part11">
+			<h3>Results (w/ autostitching)</h3>
 			<div class="image-row">
 				<div class="image-card">
-					<img src="img/data/apple.jpeg" alt="">
-					<p class="caption">apple</p>
+					<img src="img/partb/mosaic/class.jpg" alt="">
+					<p class="caption">classroom</p>
 				</div>
 				<div class="image-card">
-					<img src="img/data/orange.jpeg" alt="">
-					<p class="caption">orange</p>
-				</div>
-				<div class="image-card">
-					<img src="img/part2-3/vert_mask.jpg" alt="">
-					<p class="caption">mask</p>
-				</div>
-				<div class="image-card">
-					<img src="img/part2-3/oraple.jpg" alt="">
-					<p class="caption">oraple</p>
+					<img src="img/partb/mosaic/corn.jpg" alt="">
+					<p class="caption">corn maze</p>
 				</div>
 			</div>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/partb/mosaic/lab.jpg" alt="">
+					<p class="caption">lab</p>
+				</div>
+				<div class="image-card">
+					<img src="img/partb/mosaic/room.jpg" alt="">
+					<p class="caption">room</p>
+				</div>
+			</div>
+			<p>
+				Most of the results do seem consistent with the manual stitching. However, with the room stitch, I think the correspondences were difficult to find, in addition to the camera moving slightly between each image, which causes a less than ideal stitch.
+			</p>
+
+			<div class="image-row">
+				<div class="image-card">
+					<img src="img/partb/mosaic/trees.jpg" alt="">
+					<p class="caption">trees</p>
+				</div>
+				<div class="image-card">
+					<img src="img/partb/mosaic/house.jpg" alt="">
+					<p class="caption">house</p>
+				</div>
+			</div>
+			<p>
+				Here, similar to the manually stitched, we can still observe edge artifcats, which are possibly due to poor camera work and exposure differences. However, I'm pretty satisfied that it is relatively consistent with the real view.
+			</p>
+
+			<h4>What I learned</h4>
+			<p>
+				Personally, I found the feature matching really fascinating, and thought it was really cool how simple math can be used to automatically find all these points of interest. The feature extraction and matching was really cool since it generated stitches that were very similar to the manually stitched, but without the need to click through all correspondences.
+			</p>
 		</section>
- -->
+
 	</body>
 </html>
