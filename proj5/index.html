@@ -1,0 +1,992 @@
+<html>
+	<head>
+		<title>CS 280A Proj5 - Leo Huang</title>
+		<link rel="stylesheet" href="styles.css">
+	</head>
+	<body>
+		<section class="" id="title">
+			<h1>CS 280A Project 5</h1>
+			<h1>Fun with Diffusion Models</h1>
+			<h2>Leo Huang</h2>
+			<div class="image-card">
+				<img class="" src="img/part2/c_unet/c_unet_sample_e20.gif" alt="">
+				<p class="caption">resulting denoising sequence for a <a href="#part5">class-conditioned UNet</a></p>
+			</div>
+		</section>
+
+		<section class="" id="overview">
+			<h3>Overview</h3>
+			<p>
+				This project explores diffusion models and sampling from pretrained mdoels like <a href="https://huggingface.co/docs/diffusers/api/pipelines/deepfloyd_if">DeepFloyd IF</a> by Stability AI. We explore denoising capabilities of such models as well as how to sample finer quality images, image translations, visual anagrams, and hybrid images. In later parts, we also explore the design and conditioning of such denoising neural nets based on methods from the paper <a href="https://arxiv.org/abs/2006.11239">"Denoising Diffusion Probabilistic Models"</a> (DDPM) by Ho et al..
+			</p>
+		</section>
+
+		<section class="" id="part1">
+			<div id="part1-header">
+				<h3>Basic Sampling Loops using DeepFloyd</h3>
+				<p>
+					To begin our foray into diffusion models, we first examine the capabilities of denoising and sampling from pretrained diffusion models.
+				</p>
+			</div>
+
+			<div id="part1-1">
+				<h4>Forward Noising Process</h4>
+				<p>
+					In diffusion model training, a clean image <code>x_0</code> is iteratively perturbed, obtaining progressively more noisy versions of the image <code>x_t</code> until timestep t = T. The model then tries to reverse this process by predicting the noise in the image at different timesteps and denoising the image. To generate our noisy test input, we take a clean image of the Campanile and apply the forward process <code>x_t = sqrt(alpha_bar_t) * x_0 + sqrt(1 - alpha_bar_t) * noise</code> where <code>noise</code> ~ N(0, 1). <code>alpha_bar_t</code> corresponds to the amount of noise that should be added based on the timestep.
+				</p>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part1/1/forward_t_250.png" alt="">
+						<p class="caption">t = 250</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/1/forward_t_500.png" alt="">
+						<p class="caption">t = 500</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/1/forward_t_750.png" alt="">
+						<p class="caption">t = 750</p>
+					</div>
+			</div>
+
+			<div id="part1-2">
+				<h4>Classical Denoising</h4>
+				<p>
+					Classical denoising methods generally entail Gaussian blur filtering. We can observe improvements in the image at low noise levels, but at higher noise levels, the filter fails to recover any features in the image.
+				</p>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part1/2/blur_t_250.png" alt="">
+						<p class="caption">t = 250</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/2/blur_t_500.png" alt="">
+						<p class="caption">t = 500</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/2/blur_t_750.png" alt="">
+						<p class="caption">t = 750</p>
+					</div>
+				</div>
+			</div>
+
+			<div id="part1-3">
+				<h4>One-Step Denoising</h4>
+				<p>
+					Next, we try single-step denoising by sampling from a pretrained UNet. The UNet used was trained with text conditioning, so we have a corresponding text prompt embedding, "a high quality photo", which guides the model's denoising process. To denoise our image, we pass in our noisy input, and get a noise estimate. Reversing our forward process, we get <code>x_0 = (x_t - noise_est * sqrt(1 - alpha_bar_t)) / sqrt(alpha_bar_t)</code>. This leaves us with a much cleaner denoised version of the image. However, it is still not perfect, and at higher noise levels, we can also observe the structure changing.
+				</p>
+				<div class="image-row">
+					<div class="image-card">
+						<!-- <img src="img/part1/3/unet_t_250.png" alt=""> -->
+						<p class="caption">noisy</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/1/forward_t_250.png" alt="">
+						<p class="caption">t = 250</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/1/forward_t_500.png" alt="">
+						<p class="caption">t = 500</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/1/forward_t_750.png" alt="">
+						<p class="caption">t = 750</p>
+					</div>
+				</div>
+				<div class="image-row">
+					<div class="image-card">
+						<!-- <img src="img/part1/3/unet_t_250.png" alt=""> -->
+						<p class="caption">denoised</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/3/unet_t_250.png" alt="">
+						<p class="caption">t = 250</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/3/unet_t_500.png" alt="">
+						<p class="caption">t = 500</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/3/unet_t_750.png" alt="">
+						<p class="caption">t = 750</p>
+					</div>
+				</div>
+			</div>
+
+			<div id="part1-4">
+				<h4>Iterative Denoising</h4>
+				<p>
+					Since denoising UNets are trained to denoise iteratively, we implement an iterative denoising process. This is very similar to single-step denoising, but entails finding a linear interpolation between the estimated noise and the image at each time step. The denoising equation used was derived from the <a href="https://arxiv.org/abs/2006.11239">DDPM paper</a>. Here, we finally a much better quality image is recovered, although the structure has completely changed.
+				</p>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part1/4/iterative_t90.png" alt="">
+						<p class="caption">t = 90</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/4/iterative_t240.png" alt="">
+						<p class="caption">t = 240</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/4/iterative_t390.png" alt="">
+						<p class="caption">t = 390</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/4/iterative_t540.png" alt="">
+						<p class="caption">t = 540</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/4/iterative_t690.png" alt="">
+						<p class="caption">t = 690</p>
+					</div>
+				</div>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part1/data/campanile.png" alt="">
+						<p class="caption">original</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/4/iterative_clean.png" alt="">
+						<p class="caption">iterative denoise</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/4/iterative_one_step.png" alt="">
+						<p class="caption">one-step denoise</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/4/iterative_blur.png" alt="">
+						<p class="caption">blurred denoise</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="" id="part2">
+			<div id="part2-header">
+				<h3>Diffusion Model Sampling</h3>
+			</div>
+
+			<div id="part2-1">
+				<h4>Naive Sampling</h4>
+				<p>
+					Instead of starting with a noised input image, we can also start with an image of pure noise. Applying iterative denoising can allow us to generate interesting images from scratch.
+				</p>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part1/5/sampling_0.png" alt="">
+						<p class="caption">sample 1</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/5/sampling_1.png" alt="">
+						<p class="caption">sample 2</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/5/sampling_2.png" alt="">
+						<p class="caption">sample 3</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/5/sampling_3.png" alt="">
+						<p class="caption">sample 4</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/5/sampling_4.png" alt="">
+						<p class="caption">sample 5</p>
+					</div>
+				</div>
+			</div>
+
+			<div id="part2-2">
+				<h4>Classifier-Free Guidance (CFG)</h4>
+				<p>
+					Among our sampled images, although interesting, we can observe lower qualities. Using <a href="https://arxiv.org/abs/2207.12598">Classifier-Free Diffusion Guidance</a> (CFG), it is possible to increase the quality of our images. We compute both a conditional and unconditional noise estimate and generate a new noise estimate <code>noise_est = noise_uncond + gamma * (noise_cond - noise_uncond)</code> where gamma > 1. Although the cause for why this is the result is still up to vigorous debate, personally, it seems it uses the unconditional noise estimate as a baseline, and then accentuates the noise features which are observed in conditional noise estimate, allowing for sharper features in the recovered image (similar to how we add gain to high frequency features in project 2 for image sharpening).
+				</p>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part1/6/sampling_cfg_0.png" alt="">
+						<p class="caption">sample 1</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/6/sampling_cfg_1.png" alt="">
+						<p class="caption">sample 2</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/6/sampling_cfg_2.png" alt="">
+						<p class="caption">sample 3</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/6/sampling_cfg_3.png" alt="">
+						<p class="caption">sample 4</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/6/sampling_cfg_4.png" alt="">
+						<p class="caption">sample 5</p>
+					</div>
+				</div>
+			</div>
+
+			<div id="part2-3">
+				<h4>Image-to-Image Translation</h4>
+				<p>
+					One application of our new sampling implementation is editing existing images. By adding noise to our images, the diffusion model is allowed to "hallucinate" new things and force the image back onto a natural manifold, as described by the <a href="https://sde-image-editing.github.io/">SDEdit</a> algorithm. We can observe that as the starting t increases, our image gets closer and closer to the original Campanile with a few perturbations here and there.
+				</p>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part1/7/sdedit_campanile_1.png" alt="">
+						<p class="caption">i_start = 1</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/sdedit_campanile_3.png" alt="">
+						<p class="caption">i_start = 3</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/sdedit_campanile_5.png" alt="">
+						<p class="caption">i_start = 5</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/sdedit_campanile_7.png" alt="">
+						<p class="caption">i_start = 7</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/sdedit_campanile_10.png" alt="">
+						<p class="caption">i_start = 10</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/sdedit_campanile_20.png" alt="">
+						<p class="caption">i_start = 20</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/data/campanile.png" alt="">
+						<p class="caption">original</p>
+					</div>
+				</div>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part1/7/sdedit_cat_1.png" alt="">
+						<p class="caption">i_start = 1</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/sdedit_cat_3.png" alt="">
+						<p class="caption">i_start = 3</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/sdedit_cat_5.png" alt="">
+						<p class="caption">i_start = 5</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/sdedit_cat_7.png" alt="">
+						<p class="caption">i_start = 7</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/sdedit_cat_10.png" alt="">
+						<p class="caption">i_start = 10</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/sdedit_cat_20.png" alt="">
+						<p class="caption">i_start = 20</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/data/cat.jpg" alt="">
+						<p class="caption">original</p>
+					</div>
+				</div>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part1/7/sdedit_jelly_1.png" alt="">
+						<p class="caption">i_start = 1</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/sdedit_jelly_3.png" alt="">
+						<p class="caption">i_start = 3</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/sdedit_jelly_5.png" alt="">
+						<p class="caption">i_start = 5</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/sdedit_jelly_7.png" alt="">
+						<p class="caption">i_start = 7</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/sdedit_jelly_10.png" alt="">
+						<p class="caption">i_start = 10</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/sdedit_jelly_20.png" alt="">
+						<p class="caption">i_start = 20</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/data/jelly.jpg" alt="">
+						<p class="caption">original</p>
+					</div>
+				</div>
+
+				<p>
+					Similarly, we can use the model to also edit web and hand-drawn images. However, due to my poor drawing skills, most of the generated images even at later stages are not very representative of what I had intended it to be.
+				</p>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part1/7/edit_web_1.png" alt="">
+						<p class="caption">i_start = 1</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/edit_web_3.png" alt="">
+						<p class="caption">i_start = 3</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/edit_web_5.png" alt="">
+						<p class="caption">i_start = 5</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/edit_web_7.png" alt="">
+						<p class="caption">i_start = 7</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/edit_web_10.png" alt="">
+						<p class="caption">i_start = 10</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/edit_web_20.png" alt="">
+						<p class="caption">i_start = 20</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/edit_web_original.png" alt="">
+						<p class="caption">web image</p>
+					</div>
+				</div>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part1/7/edit_hand_frog_1.png" alt="">
+						<p class="caption">i_start = 1</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/edit_hand_frog_3.png" alt="">
+						<p class="caption">i_start = 3</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/edit_hand_frog_5.png" alt="">
+						<p class="caption">i_start = 5</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/edit_hand_frog_7.png" alt="">
+						<p class="caption">i_start = 7</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/edit_hand_frog_10.png" alt="">
+						<p class="caption">i_start = 10</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/edit_hand_frog_20.png" alt="">
+						<p class="caption">i_start = 20</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/edit_hand_frog_original.png" alt="">
+						<p class="caption">frog</p>
+					</div>
+				</div>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part1/7/edit_hand_computer_1.png" alt="">
+						<p class="caption">i_start = 1</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/edit_hand_computer_3.png" alt="">
+						<p class="caption">i_start = 3</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/edit_hand_computer_5.png" alt="">
+						<p class="caption">i_start = 5</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/edit_hand_computer_7.png" alt="">
+						<p class="caption">i_start = 7</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/edit_hand_computer_10.png" alt="">
+						<p class="caption">i_start = 10</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/edit_hand_computer_20.png" alt="">
+						<p class="caption">i_start = 20</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/edit_hand_computer_original.png" alt="">
+						<p class="caption">computer</p>
+					</div>
+				</div>
+
+				<p>
+					Another application of this process is inpainting, following the <a href="https://arxiv.org/abs/2201.09865">RePaint</a> paper. Here, we generate a mask, and have the model essentially fill in the the mask with the surrounding image forced to remain the same. This allows us to be more creative with our images, while generally adhering to the context of the image.
+				</p>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part1/data/campanile.png" alt="">
+						<p class="caption">Campanile</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/inpaint_campanile.png" alt="">
+						<p class="caption">inpainted</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/data/cat.jpg" alt="">
+						<p class="caption">cat</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/inpaint_cat.png" alt="">
+						<p class="caption">inpainted</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/data/jelly.jpg" alt="">
+						<p class="caption">jellyfish</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/inpaint_jelly.png" alt="">
+						<p class="caption">inpainted</p>
+					</div>
+				</div>
+
+				<p>
+					One last application that we explored was text-conditional image-to-image translation. By changing the text prompt embedding, our noise is conditioned to more specific prompts, and transforms our images towards our text prompts. Here the Campanile and jellyfish are conditioned using "a rocket ship", while the cat is conditioned using "a photo of a dog".
+				</p>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part1/7/text_trans_1.png" alt="">
+						<p class="caption">i_start = 1</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/text_trans_3.png" alt="">
+						<p class="caption">i_start = 3</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/text_trans_5.png" alt="">
+						<p class="caption">i_start = 5</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/text_trans_7.png" alt="">
+						<p class="caption">i_start = 7</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/text_trans_10.png" alt="">
+						<p class="caption">i_start = 10</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/text_trans_20.png" alt="">
+						<p class="caption">i_start = 20</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/data/campanile.png" alt="">
+						<p class="caption">Campanile</p>
+					</div>
+				</div>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part1/7/cat_trans_1.png" alt="">
+						<p class="caption">i_start = 1</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/cat_trans_3.png" alt="">
+						<p class="caption">i_start = 3</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/cat_trans_5.png" alt="">
+						<p class="caption">i_start = 5</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/cat_trans_7.png" alt="">
+						<p class="caption">i_start = 7</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/cat_trans_10.png" alt="">
+						<p class="caption">i_start = 10</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/cat_trans_20.png" alt="">
+						<p class="caption">i_start = 20</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/data/cat.jpg" alt="">
+						<p class="caption">cat</p>
+					</div>
+				</div>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part1/7/jelly_trans_1.png" alt="">
+						<p class="caption">i_start = 1</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/jelly_trans_3.png" alt="">
+						<p class="caption">i_start = 3</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/jelly_trans_5.png" alt="">
+						<p class="caption">i_start = 5</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/jelly_trans_7.png" alt="">
+						<p class="caption">i_start = 7</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/jelly_trans_10.png" alt="">
+						<p class="caption">i_start = 10</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/7/jelly_trans_20.png" alt="">
+						<p class="caption">i_start = 20</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/data/jelly.jpg" alt="">
+						<p class="caption">jellyfish</p>
+					</div>
+				</div>
+			</div>
+
+			<div id="part2-4">
+				<h4>Visual Anagrams</h4>
+				<p>
+					A fun exploration, suggested by <a href="https://dangeng.github.io/visual_anagrams/">Geng, et al.</a>,  we can use diffusion models for is to create optical illusions, which reveal different images depending on the viewing orientation. This entails denoising the image <code>x_t</code> at each time step, but with 2  text prompts, one with the image right side up, and one with the image flipped upside down. Then we make a composite noise estimate by averaging the 2, and proceed iteratively like before. This results in pretty fun images, however, sometimes the text prompts can be incompatible and sample rather nonsensical results.
+				</p>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part1/8/anagrams_0.png" alt="">
+						<p class="caption">old man</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/8/anagrams_0.png" alt="" class="flip">
+						<p class="caption">campfire</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/8/anagrams_1.png" alt="">
+						<p class="caption">campfire</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/8/anagrams_1.png" alt="" class="flip">
+						<p class="caption">snowy village</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/8/anagrams_2.png" alt="">
+						<p class="caption">snowy village</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/8/anagrams_2.png" alt="" class="flip">
+						<p class="caption">old man</p>
+					</div>
+				</div>
+			</div>
+
+			<div id="part2-5">
+				<h4>Hybrid Images</h4>
+				<p>
+					Another fun exploration, also suggested by <a href="https://arxiv.org/abs/2404.11615">Geng, et al.</a>, we can use our model for is creating hybrid images. This allows us to generate images that look like one text prompt from close up, and another text prompt from far away. This is achieved by creating a compositive noise estimate of the noise estimates passed through highpass and lowpass filters. However, similarly, sometimes the text prompts can be incompatible and rarely sample something satisfactory.
+				</p>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part1/9/hybrid_0.png" alt="">
+						<p class="caption">skull + waterfall</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/9/hybrid_1.png" alt="">
+						<p class="caption">campfire + snowy village</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/9/hybrid_2.png" alt="">
+						<p class="caption">waterfall + rocket</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part1/9/hybrid_3.png" alt="">
+						<p class="caption">skull + old man</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="" id="part3">
+			<div id="part3-header">
+				<h3>Training a Single-Step Denoising UNet</h3>
+				<p>
+					Now that we've explored how to use a denoising UNet, we aim to create and train our own diffusion model on the MNIST dataset.
+				</p>
+			</div>
+
+			<div id="part3-1">
+				<h4>Creating a Noisy Dataset</h4>
+				<p>
+					To begin this process, we first create a dataset and dataloader in which we pair a noised image with its clean version. This way we can compute the mean squared error (MSE) loss between the predicted denoised image and the clean image. We use a simple equation for our noising process: <code>z = x + sigma * noise</code> where <code>noise</code> ~ N(0, I) and <code>sigma = [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]</code>.
+				</p>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part2/unet/data/noisy_sig0.png" alt="">
+						<p class="caption">sigma = 0.0</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/data/noisy_sig2.png" alt="">
+						<p class="caption">sigma = 0.2</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/data/noisy_sig4.png" alt="">
+						<p class="caption">sigma = 0.4</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/data/noisy_sig5.png" alt="">
+						<p class="caption">sigma = 0.5</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/data/noisy_sig6.png" alt="">
+						<p class="caption">sigma = 0.6</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/data/noisy_sig8.png" alt="">
+						<p class="caption">sigma = 0.8</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/data/noisy_sig10.png" alt="">
+						<p class="caption">sigma = 1.0</p>
+					</div>
+				</div>
+			</div>
+
+			<div id="part3-2">
+				<h4>Training</h4>
+				<p>
+					Next, the UNet is constructed follow this architecture.
+				</p>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part2/data/unconditional_arch.png" alt="">
+						<p class="caption">unconditioned UNet architecture</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/unet_loss.png" alt="">
+						<p class="caption">unconditioned UNet training loss curve</p>
+					</div>
+				</div>
+
+				<p>
+					As specified, the UNet is trained on a Noisy MNIST dataset with <code>sigma = 0.5</code> using MSE loss. For the model's hyperparameters, batch size = 256, hidden dimensions = 128, epochs = 5, and an Adam optimizer is used with a learning rate of 1e-4.
+				</p>
+
+				<p>
+					Once training is complete, we can visualize the model's ability to denoise. After the first epoch, we can observe the model still struggles to remove the noise completely from the input image. However, after the fifth epoch, we can observe a significant improvement in our output image quality.
+				</p>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part2/unet/test/unet_e1_0_in.png" alt="">
+						<p class="caption"></p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/unet_e1_0_noisy.png" alt="">
+						<p class="caption"></p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/unet_e1_0_out.png" alt="">
+						<p class="caption"></p>
+					</div>
+					<div class="image-card">
+						<!-- <img src="img/part2/unet/test/unet_e1_0_in.png" alt=""> -->
+						<p class="caption"></p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/unet_e5_0_in.png" alt="">
+						<p class="caption"></p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/unet_e5_0_noisy.png" alt="">
+						<p class="caption"></p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/unet_e5_0_out.png" alt="">
+						<p class="caption"></p>
+					</div>
+				</div>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part2/unet/test/unet_e1_1_in.png" alt="">
+						<p class="caption"></p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/unet_e1_1_noisy.png" alt="">
+						<p class="caption"></p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/unet_e1_1_out.png" alt="">
+						<p class="caption"></p>
+					</div>
+					<div class="image-card">
+						<!-- <img src="img/part2/unet/test/unet_e1_1_in.png" alt=""> -->
+						<p class="caption"></p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/unet_e5_1_in.png" alt="">
+						<p class="caption"></p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/unet_e5_1_noisy.png" alt="">
+						<p class="caption"></p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/unet_e5_1_out.png" alt="">
+						<p class="caption"></p>
+					</div>
+				</div>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part2/unet/test/unet_e1_2_in.png" alt="">
+						<p class="caption">image</p>
+						<p class="caption hide">epoch 1</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/unet_e1_2_noisy.png" alt="">
+						<p class="caption">input</p>
+						<p class="caption">epoch 1</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/unet_e1_2_out.png" alt="">
+						<p class="caption">output</p>
+						<p class="caption hide">epoch 1</p>
+					</div>
+					<div class="image-card">
+						<!-- <img src="img/part2/unet/test/unet_e1_2_in.png" alt=""> -->
+						<p class="caption"></p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/unet_e5_2_in.png" alt="">
+						<p class="caption">image</p>
+						<p class="caption hide">epoch 5</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/unet_e5_2_noisy.png" alt="">
+						<p class="caption">input</p>
+						<p class="caption">epoch 5</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/unet_e5_2_out.png" alt="">
+						<p class="caption">output</p>
+						<p class="caption hide">epoch 5</p>
+					</div>
+				</div>
+
+			</div>
+
+			<div id="part3-3">
+				<h4>Out-of-Distribution Testing</h4>
+				<p>
+					To further evaluate our learned model, we test on data points that are out of the training distribution. We use the entire range of sigmas and pass in the various noised images into our model. As observed, the model performs relatively well up until <code>sigma = 0.8</code>, after which, the model seems to struggle to recover the original image, and instead "hallucinates" a little.
+				</p>
+				<div class="image-row">
+					<div class="image-card">
+						<!-- <img src="img/part2/unet/test/ood_noisy_sig0.png" alt=""> -->
+						<p class="caption">noisy input</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/ood_noisy_sig0.png" alt="">
+						<p class="caption">sigma = 0</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/ood_noisy_sig2.png" alt="">
+						<p class="caption">sigma = 2</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/ood_noisy_sig4.png" alt="">
+						<p class="caption">sigma = 4</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/ood_noisy_sig5.png" alt="">
+						<p class="caption">sigma = 5</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/ood_noisy_sig6.png" alt="">
+						<p class="caption">sigma = 6</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/ood_noisy_sig8.png" alt="">
+						<p class="caption">sigma = 8</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/ood_noisy_sig10.png" alt="">
+						<p class="caption">sigma = 10</p>
+					</div>
+				</div>
+				<div class="image-row">
+					<div class="image-card">
+						<!-- <img src="img/part2/unet/test/ood_noisy_sig0.png" alt=""> -->
+						<p class="caption">model output</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/ood_out_sig0.png" alt="">
+						<p class="caption">sigma = 0</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/ood_out_sig2.png" alt="">
+						<p class="caption">sigma = 2</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/ood_out_sig4.png" alt="">
+						<p class="caption">sigma = 4</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/ood_out_sig5.png" alt="">
+						<p class="caption">sigma = 5</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/ood_out_sig6.png" alt="">
+						<p class="caption">sigma = 6</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/ood_out_sig8.png" alt="">
+						<p class="caption">sigma = 8</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/unet/test/ood_out_sig10.png" alt="">
+						<p class="caption">sigma = 10</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="" id="part4">
+			<div id="part4-header">
+				<h3>Training a Time Conditioned UNet</h3>
+			</div>
+
+			<div id="part4-1">
+				<h4>Training</h4>
+				<p>
+					Instead of a single-step denoiser, we now aim to train a UNet model that iteratively denoises images, similar to the one we sampled from before. This requires a slight change in our loss function - now we take the MSE loss between the predicted noise and actual noise at each time step, given an image and time t. We also change our model architecture to include 2 fully connected blocks that help incorporate the timestep into our prediction output.
+				</p>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part2/data/conditional_arch.png" alt="">
+						<p class="caption">time-conditioned UNet architecture</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/t_unet/t_unet_loss.png" alt="">
+						<p class="caption">time-conditioned UNet training loss curve</p>
+					</div>
+				</div>
+
+				<p>
+					This time, the normal MNIST dataset was used, and when running the DDPM forward algorithm, t was uniformly sampled from a range of timesteps, which was then used to compute the noisy image based on the previous iterative forward noising process. Within this process, a custom DDPM schedule was computed using <code>betas</code> in [0.0001, 0.02], and <code>alphas</code> and <code>alpha_bars</code> calculated accordingly. For the model's hyperparameters, batch size = 128, hidden dimensions = 64, epochs = 20, and an Adam optimizer is used with an initial learning rate of 1e-3. An exponential learning rate decay scheduler with a gamma of <code>0.1 ** (1.0 / num_epochs)</code> is also used.
+				</p>
+
+				<p>
+					Here are also some visualizations of the model's predictions during the training process.
+				</p>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part2/t_unet/training/e10_x0.png" alt="">
+						<p class="caption">x_0 at epoch 10</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/t_unet/training/e10_xt.png" alt="">
+						<p class="caption">x_t at epoch 10</p>
+					</div>
+				</div>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part2/t_unet/training/e10_pred.png" alt="">
+						<p class="caption">predicted noise at epoch 10</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/t_unet/training/e10_denoise.png" alt="">
+						<p class="caption">predicted denoise at epoch 10</p>
+					</div>
+				</div>
+			</div>
+
+			<div id="part4-2">
+				<h4>Sampling</h4>
+				<p>
+					After training is complete, we use the DDPM sampling algorithm to iteratively denoise an image of pure noise to recover  our numbers. At epoch 5, it's still pretty clear that the model hasn't learned the numbers' structures, and denoises to more abstract figures. Once epoch 20 finishes, the model does seem to generate more sensical outputs that are clean of noise and other visual artifacts.
+				</p>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part2/t_unet/sampling/t_unet_e5_sample.png" alt="">
+						<p class="caption">sampling UNet at epoch 5</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/t_unet/t_unet_sample_e5.gif" alt="">
+						<p class="caption">sampling process at epoch 5</p>
+					</div>
+				</div>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part2/t_unet/sampling/t_unet_e20_sample.png" alt="">
+						<p class="caption">sampling UNet at epoch 20</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/t_unet/t_unet_sample_e20.gif" alt="">
+						<p class="caption">sampling process at epoch 20</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="" id="part5">
+			<div id="part5-header">
+				<h3>Training a Class Conditioned UNet</h3>
+			</div>
+
+			<div id="part5-1">
+				<h4>Training</h4>
+				<p>
+					To improve upon our time-conditioned UNet, we further add 2 more fully connected blocks to incorporate the class (aka the number) that the image corresponds to. This helps guide the denoiser towards a specified noise pattern, similar to the text embeddings from the earlier sections. We also include a 10% dropout such that the UNet is still able to learn noise estimates without class conditioning. In both the time-conditioned and class-conditioned UNets, we can observe the loss bouncing around asymptotically in later iterations, but this is inevitable given that the noise is randomly distributed. However, the class-conditioned UNet is able to achieve lower losses in later iterations, likely thanks to the help of class conditioning.
+				</p>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part2/c_unet/c_unet_loss.png" alt="">
+						<p class="caption">class-conditioned UNet training loss curve</p>
+					</div>
+				</div>
+
+				<p>
+					Here are also some visualizations of the model's predictions during the training process.
+				</p>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part2/c_unet/training/e10_x0.png" alt="">
+						<p class="caption">x_0 at epoch 10</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/c_unet/training/e10_xt.png" alt="">
+						<p class="caption">x_t at epoch 10</p>
+					</div>
+				</div>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part2/c_unet/training/e10_pred.png" alt="">
+						<p class="caption">predicted noise at epoch 10</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/c_unet/training/e10_denoise.png" alt="">
+						<p class="caption">predicted denoise at epoch 10</p>
+					</div>
+				</div>
+			</div>
+
+			<div id="part5-2">
+				<h4>Sampling</h4>
+				<p>
+					After the training is complete, it's time to test our sampling results again. However, this time, the sampling algorithm is changed to use CFG and produce an unconditional and conditional noise estimate before generating a final composite noise estimate. In this way, we can observe that even in epoch 5, our model is already generating close to perfect images of each number, which is further refined after epoch 20.
+				</p>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part2/c_unet/sampling/c_unet_e5_sample.png" alt="">
+						<p class="caption">sampling UNet at epoch 5</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/c_unet/c_unet_sample_e5.gif" alt="">
+						<p class="caption">sampling process at epoch 5</p>
+					</div>
+				</div>
+				<div class="image-row">
+					<div class="image-card">
+						<img src="img/part2/c_unet/sampling/c_unet_e20_sample.png" alt="">
+						<p class="caption">sampling UNet at epoch 20</p>
+					</div>
+					<div class="image-card">
+						<img src="img/part2/c_unet/c_unet_sample_e20.gif" alt="">
+						<p class="caption">sampling process at epoch 20</p>
+					</div>
+				</div>
+			</div>
+		</section>
+	</body>
+</html>
