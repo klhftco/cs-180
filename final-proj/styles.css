@@ -1,0 +1,163 @@
+/* GLOBAL STYLES */
+
+* {
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+
+  h1, h2, h3, h4 {
+    font-weight: bold;
+  }
+
+  h1 {
+    font-size: 24px;
+  }
+  h2 {
+    font-size: 24px;
+  }
+  h3 {
+    font-size: 22px;
+  }
+  h4 {
+    font-size: 18px;
+  }
+
+  p {
+    font-size: 18px;
+    font-weight: normal;
+  }
+}
+
+section {
+  width: 70%;
+  margin-bottom: 2vh;
+
+  h3 {
+    margin: 1vh 0;
+  }
+  h4 {
+    margin-top: 1vh;
+    margin-bottom: 0.5vh;
+  }
+
+  p {
+    margin-left: 2vw;
+    margin-bottom: 1.5vh;
+  }
+}
+
+code {
+    background-color: #FFDBD4;
+    color: #EF8889;
+    padding: 2px;
+    font-size: 14px;
+    border-radius: 5px;
+}
+
+/* COMPONENT STYLES */
+
+.image-row {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+
+  margin-bottom: 1vh;
+  padding-top: 1vh;
+  padding-left: 0.3vh;
+  padding-right: 0.3vh;
+  background-color: #FFA7A6;
+  border-radius: 20px;
+
+  column-gap: normal;
+  height: auto;
+
+  .image-card {
+    width: 50%;
+    height: 100%;
+  }
+
+}
+
+.image-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+
+  .caption {
+    padding: 0;
+    margin-left: 0;
+    margin-top: 0.25vh;
+    margin-bottom: 0.5vh;
+    font-size: 16px;
+  }
+
+  img {
+    width: 90%;
+    /* aspect-ratio: 1 / 1; */
+    object-fit: cover;
+    border-radius: 20px;
+    object-position: center;
+  }
+
+  .bot-align {
+    object-position: bottom;
+  }
+
+  .no-square {
+    aspect-ratio: auto;
+  }
+
+  .shrink {
+    width: 50%;
+    aspect-ratio: 1 / 1;
+  }
+
+  .hide {
+    color: #fff0;
+  }
+
+  .flip {
+    transform: rotate(180deg);
+  }
+}
+
+/* SECTION STYLES */
+
+#title {
+  width: 100%;
+  min-height: 47vh;
+  margin-bottom: 1vh;
+
+  background: #FF9899;
+  background: linear-gradient(180deg, #FF9899 0%, rgba(255,255,255,1) 130%);
+  color: #1f1f1f;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+
+  img {
+    /* max-width: 70%; */
+    margin-top: 1.5vh;
+    max-height: 90%;
+  }
+  .image-card {
+    margin-bottom: 1vh;
+  }
+}
