@@ -1,0 +1,597 @@
+<html>
+	<head>
+		<title>CS 280A Final Proj</title>
+		<link rel="stylesheet" href="styles.css">
+	</head>
+	<body>
+		<section class="" id="title">
+			<h1>CS 280A Final Project</h1>
+			<h1>Fun with SOCS (Unsupervised Object Representation)</h1>
+			<h2>Yarden Goraly and Leo Huang</h2>
+			<div class="image-card">
+				<img class="" src="assets/image.png" alt="">
+				<p class="caption">generated VAE output</p>
+			</div>
+		</section>
+
+		<section class="" id="overview">
+			<h3>Overview</h3>
+			<p>
+				In our project, we explore various methods to improve unsupervised object segmentation and representation through diffusion, variational autoencoders (VAE), and novel architectures.
+				More about the project can be found on our <a href="https://github.com/YardenGoraly/CS280A_Final_Project">Github Repository</a>.
+			</p>
+		</section>
+
+		<section class="" id="part1">
+			<div id="part1-header">
+				<h3>Latent Perturbation Results</h3>
+			</div>
+
+			<h3>Perturbation - Movi A</h3>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="assets/perturb/movi/orig.gif" alt="">
+					<p class="caption">original</p>
+				</div>
+				<div class="image-card">
+					<img src="assets/perturb/movi/yx.gif" alt="">
+					<p class="caption">y = x translation</p>
+				</div>
+				<div class="image-card">
+					<img src="assets/perturb/movi/y-x.gif" alt="">
+					<p class="caption">y = -x translation</p>
+				</div>
+				<div class="image-card">
+					<img src="assets/perturb/movi/ytrans.gif" alt="">
+					<p class="caption">y translation</p>
+				</div>
+				<div class="image-card">
+					<img src="assets/perturb/movi/glossy.gif" alt="">
+					<p class="caption">glossiness</p>
+				</div>
+				<div class="image-card">
+					<img src="assets/perturb/movi/opacity.gif" alt="">
+					<p class="caption">opacity</p>
+				</div>
+				<div class="image-card">
+					<img src="assets/perturb/movi/ytransobj.gif" alt="">
+					<p class="caption">y translation (obj.)</p>
+				</div>
+				<div class="image-card">
+					<img src="assets/perturb/movi/ytransobj2.gif" alt="">
+					<p class="caption">y translation (obj.)</p>
+				</div>
+			</div>
+			<h3>Perturbation - Real World</h3>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="assets/perturb/real/orig.gif" alt="">
+					<p class="caption">original</p>
+				</div>
+				<div class="image-card">
+					<img src="assets/perturb/real/-ytrans.gif" alt="">
+					<p class="caption">-y translation</p>
+				</div>
+				<div class="image-card">
+					<img src="assets/perturb/real/xtrans.gif" alt="">
+					<p class="caption">-x translation</p>
+				</div>
+				<div class="image-card">
+					<img src="assets/perturb/real/ytrans.gif" alt="">
+					<p class="caption">+y translation</p>
+				</div>
+				<div class="image-card">
+					<img src="assets/perturb/real/size_dec.gif" alt="">
+					<p class="caption">decrease size</p>
+				</div>
+				<div class="image-card">
+					<img src="assets/perturb/real/size_inc.gif" alt="">
+					<p class="caption">increase size</p>
+				</div>
+				<div class="image-card">
+					<img src="assets/perturb/real/color.gif" alt="">
+					<p class="caption">color</p>
+				</div>
+				<div class="image-card">
+					<img src="assets/perturb/real/opacity.gif" alt="">
+					<p class="caption">opacity</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="" id="part2">
+			<div id="part2-header">
+				<h3>Diffusion Results</h3>
+			</div>
+
+			<h3>DDPM A - Base Reconstructions</h3>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="assets/movi_a_recons/0.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/movi_a_recons/1.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/movi_a_recons/2.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/movi_a_recons/3.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/movi_a_recons/4.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/movi_a_recons/5.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/movi_a_recons/6.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/movi_a_recons/7.gif" alt="">
+					<p class="caption"></p>
+				</div>
+			</div>
+			<h3>DDPM A - T=8</h3>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="assets/trial28/0.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial28/1.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial28/2.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial28/3.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial28/4.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial28/5.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial28/6.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial28/7.gif" alt="">
+					<p class="caption"></p>
+				</div>
+			</div>
+			<h3>DDPM A - T=6</h3>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="assets/trial29/0.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial29/1.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial29/2.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial29/3.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial29/4.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial29/5.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial29/6.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial29/7.gif" alt="">
+					<p class="caption"></p>
+				</div>
+			</div>
+			<h3>DDPM A - T=4</h3>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="assets/trial30/0.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial30/1.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial30/2.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial30/3.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial30/4.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial30/5.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial30/6.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial30/7.gif" alt="">
+					<p class="caption"></p>
+				</div>
+			</div>
+
+			<h3>DDPM C - T=4</h3>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="assets/trial1c/0.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial1c/1.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial1c/2.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial1c/3.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial1c/4.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial1c/5.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial1c/6.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial1c/7.gif" alt="">
+					<p class="caption"></p>
+				</div>
+			</div>
+			<h3>DDPM C - T=8</h3>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="assets/trial2c/0.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial2c/1.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial2c/2.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial2c/3.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial2c/4.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial2c/5.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial2c/6.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial2c/7.gif" alt="">
+					<p class="caption"></p>
+				</div>
+			</div>
+
+			<h3>DDPM C - Real World Ground Truth</h3>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="assets/real_gt/0.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/real_gt/1.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/real_gt/2.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/real_gt/3.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/real_gt/4.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/real_gt/5.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/real_gt/6.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/real_gt/7.gif" alt="">
+					<p class="caption"></p>
+				</div>
+			</div>
+			<h3>DDPM C - Base Reconstruction</h3>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="assets/real_recons/val_0_375700.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/real_recons/val_14_375700.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/real_recons/val_3_375700.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/real_recons/val_12_375700.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/real_recons/val_13_375700.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/real_recons/val_2_375700.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/real_recons/val_15_375700.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/real_recons/val_16_375700.gif" alt="">
+					<p class="caption"></p>
+				</div>
+			</div>
+			<h3>DDPM C - T=4</h3>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="assets/trial4c/0.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial4c/1.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial4c/2.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial4c/3.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial4c/4.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial4c/5.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial4c/6.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial4c/7.gif" alt="">
+					<p class="caption"></p>
+				</div>
+			</div>
+			<h3>DDPM C - T=40</h3>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="assets/trial8c/0.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial8c/1.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial8c/2.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial8c/3.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial8c/4.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial8c/5.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial8c/6.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial8c/7.gif" alt="">
+					<p class="caption"></p>
+				</div>
+			</div>
+
+			<h3>DeepFloyd - Real World Reconstructions</h3>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="assets/trial_df/0.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial_df/1.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial_df/2.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial_df/4.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/trial_df/7.gif" alt="">
+					<p class="caption"></p>
+				</div>
+			</div>
+		</section>
+
+		<section class="" id="part3">
+			<div id="part3-header">
+				<h3>Teacher-Student Results</h3>
+			</div>
+
+			<h3>With Mask Loss - Movi A</h3>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="assets/teacher/mask_96.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/teacher/mask_276.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/teacher/mask_296.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div 	class="image-card">
+					<img src="assets/teacher/mask_386.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/teacher/mask_589.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/teacher/mask_835.gif" alt="">
+					<p class="caption"></p>
+				</div>
+			</div>
+
+			<h3>Without Mask Loss - Movi A</h3>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="assets/teacher/socs_96.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/teacher/socs_276.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/teacher/socs_296.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/teacher/socs_386.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/teacher/socs_589.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/teacher/socs_835.gif" alt="">
+					<p class="caption"></p>
+				</div>
+			</div>
+
+			<h3>With Mask Loss - Real World</h3>
+			<p>Unfortunately, the real world reconstructions were not very ideal, even with mask loss. We recognize this may be due to various reasons highlighted in our report, and leave it open for further exploration.</p>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="assets/teacher/maskr_1.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/teacher/maskr_2.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/teacher/maskr_3.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/teacher/maskr_4.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/teacher/maskr_5.gif" alt="">
+					<p class="caption"></p>
+				</div>
+				<div class="image-card">
+					<img src="assets/teacher/maskr_6.gif" alt="">
+					<p class="caption"></p>
+				</div>
+			</div>
+
+			<h3>Teacher Student Model - Training Loss</h3>
+			<div class="image-row">
+				<div class="image-card">
+					<img src="assets/teacher/recons_loss.png" alt="">
+					<p class="caption">reconstruction loss</p>
+				</div>
+				<div class="image-card">
+					<img src="assets/teacher/distr_loss.png" alt="">
+					<p class="caption">distribution loss</p>
+				</div>
+				<div class="image-card">
+					<img src="assets/teacher/raw_mask_loss.png" alt="">
+					<p class="caption">raw mask loss</p>
+				</div>
+				<div class="image-card">
+					<img src="assets/teacher/total_loss.png" alt="">
+					<p class="caption">total loss</p>
+				</div>
+			</div>
+
+		</section>
+	</body>
+</html>
